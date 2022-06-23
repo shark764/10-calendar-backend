@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Backend project written in Node.js",
   "author": "Farid Hernandez <farid.hdz.64@gmail.com>",
-  "main": "index.js",
+  "main": "src/index.ts",
   "scripts": {
     "build": "tsc",
     "start": "node ./bin/index.js",
@@ -18,10 +18,19 @@
     "pre-commit": "lint-staged",
     "prepare": "husky install"
   },
+  "_moduleAliases": {
+    "@": "bin",
+    "@modules": "bin/modules",
+    "@services": "bin/services",
+    "@controllers": "bin/controllers",
+    "@repository": "bin/repository",
+    "@routers": "bin/routers"
+  },
   "dependencies": {
     "@2600hz/commio-native-utilities": "^0.5.2",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
+    "module-alias": "^2.2.2",
     "typescript": "^4.7.4"
   },
   "devDependencies": {
@@ -36,6 +45,7 @@
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
+    "eslint-import-resolver-typescript": "^2.7.1",
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.0.0",

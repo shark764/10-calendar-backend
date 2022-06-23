@@ -2,6 +2,7 @@ import 'module-alias/register';
 import dotenv from 'dotenv';
 import express, { Express, Request, Response } from 'express';
 import { getRoute } from './routers/auth/route';
+import authRouter from './routes/auth';
 import { getDisplayN } from './utilities/any';
 import { getName } from './utils';
 
@@ -9,6 +10,15 @@ dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT ?? 9000;
+
+// * Public directory
+app.use(express.static('public'));
+
+// * Reading and parsing body
+app.use(express.json());
+
+// * Routes
+app.use('/api/v1/auth', authRouter);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Express + TypeScript Server');

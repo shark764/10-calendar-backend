@@ -1,3 +1,4 @@
+import { genSalt, hash } from 'bcrypt';
 import type { Request, Response } from 'express';
 import { User } from '@/models';
 import type { TypedRequestBody } from '@/types';
@@ -22,6 +23,13 @@ export const createUser = async (
     }
 
     const newUser = new User({ name, email, password });
+
+    // Encrypt password
+    // 10 rounds by default
+    const salt = await genSalt();
+    const encrypted = await hash(password, salt);
+    newUser.password = encrypted;
+
     const resUser = await newUser.save();
 
     return res.status(201).json({

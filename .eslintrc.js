@@ -53,7 +53,10 @@ config.rules = {
   ],
   // note you must disable the base rule as it can report incorrect errors
   'no-unused-vars': 'off',
-  '@typescript-eslint/no-unused-vars': ['warn', { vars: 'all', args: 'all' }],
+  '@typescript-eslint/no-unused-vars': [
+    'warn',
+    { vars: 'all', args: 'all', argsIgnorePattern: '^_' },
+  ],
 };
 
 module.exports = config;

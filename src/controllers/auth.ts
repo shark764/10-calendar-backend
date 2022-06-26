@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { User } from '@/models';
 import type { TypedRequestBody } from '@/types';
 
 interface CreateUserBody {
@@ -7,31 +8,39 @@ interface CreateUserBody {
   password: string;
 }
 
-export const createUser = (
+export const createUser = async (
   req: TypedRequestBody<CreateUserBody>,
   res: Response
 ) => {
   const { name, email, password } = req.body;
+  try {
+    const existingUser = await User.findOne({ email });
+    if (existingUser !== null) {
+      return res
+        .status(400)
+        .json({ ok: false, message: 'User already exists in database' });
+    }
 
-  if (name.trim().length < 5) {
-    res.status(400).json({
-      ok: false,
-      message: 'Name must be greater than 5 chars',
-    });
-  } else {
-    res.json({
+    const newUser = new User({ name, email, password });
+    const resUser = await newUser.save();
+
+    return res.status(201).json({
       ok: true,
       message: 'register',
       data: {
-        name,
-        email,
-        password,
+        ...resUser.toClient(),
       },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      ok: false,
+      message: 'Please contact the administrator',
     });
   }
 };
 
-export const renewToken = (req: Request, res: Response) => {
+export const renewToken = (_: Request, res: Response) => {
   res.json({
     ok: true,
     message: 'renew',

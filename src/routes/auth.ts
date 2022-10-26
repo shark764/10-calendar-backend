@@ -6,11 +6,11 @@
 import { Router } from 'express';
 import { check } from 'express-validator';
 import { createUser, login, renewToken } from '@/controllers/auth';
-import { fieldsValidator } from '@/middleware/fieldsValidator';
+import { fieldsValidator, validateJWT } from '@/middleware';
 
 const router = Router();
 
-router.get('/', renewToken);
+router.post('/renew', validateJWT, renewToken);
 
 router.post(
   '/',

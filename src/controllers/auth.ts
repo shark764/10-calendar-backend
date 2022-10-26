@@ -1,7 +1,8 @@
-import { genSalt, hash } from 'bcrypt';
-import type { Request, Response } from 'express';
+import { compare, genSalt, hash } from 'bcrypt';
+import type { Response } from 'express';
+import { generateJWT } from '@/helpers/jwt';
 import { User } from '@/models';
-import type { TypedRequestBody } from '@/types';
+import type { TypedRequestBody, UserExtendedRequest } from '@/types';
 
 interface CreateUserBody {
   name: string;
@@ -32,11 +33,19 @@ export const createUser = async (
 
     const resUser = await newUser.save();
 
+    // Generate JWT
+    const userData = resUser.toClient();
+    const { id } = userData;
+    const token = await generateJWT(id, name);
+
     return res.status(201).json({
       ok: true,
       message: 'register',
       data: {
-        ...resUser.toClient(),
+        token,
+        data: {
+          ...userData,
+        },
       },
     });
   } catch (error) {
@@ -48,10 +57,18 @@ export const createUser = async (
   }
 };
 
-export const renewToken = (_: Request, res: Response) => {
+export const renewToken = async (req: UserExtendedRequest, res: Response) => {
+  const { uId, uName } = req;
+  const token = await generateJWT(uId as string, uName as string);
+
   res.json({
     ok: true,
     message: 'renew',
+    data: {
+      id: uId,
+      name: uName,
+      token,
+    },
   });
 };
 
@@ -60,15 +77,46 @@ interface LoginBody {
   password: string;
 }
 
-export const login = (req: TypedRequestBody<LoginBody>, res: Response) => {
+export const login = async (
+  req: TypedRequestBody<LoginBody>,
+  res: Response
+) => {
   const { email, password } = req.body;
 
-  res.json({
-    ok: true,
-    message: 'login',
-    data: {
-      email,
-      password,
-    },
-  });
+  try {
+    const existingUser = await User.findOne({ email });
+    if (existingUser === null) {
+      return res
+        .status(400)
+        .json({ ok: false, message: 'User doesn\'t exist in database' });
+    }
+    const isValidPassword = await compare(password, existingUser.password);
+    if (!isValidPassword) {
+      return res
+        .status(400)
+        .json({ ok: false, message: 'Password is incorrect' });
+    }
+
+    // Generate JWT
+    const userData = existingUser.toClient();
+    const { id, name } = userData;
+    const token = await generateJWT(id, name);
+
+    return res.status(200).json({
+      ok: true,
+      message: 'login',
+      data: {
+        token,
+        data: {
+          ...userData,
+        },
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      ok: false,
+      message: 'Please contact the administrator',
+    });
+  }
 };

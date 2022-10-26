@@ -30,10 +30,11 @@ export const UserSchema = new Schema<IUser>(
         const objData = { ...this.toObject() };
         const { _id, ...resData } = objData;
 
-        const formattedObjData = {
+        const formattedObjData: Partial<IUser> = {
           ...resData,
-          id: _id,
+          id: _id.toString(),
         };
+        delete formattedObjData.password;
 
         return formattedObjData;
       },
